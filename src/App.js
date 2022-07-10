@@ -43,7 +43,7 @@ function Linear(props) {
       <Box  style={{paddingLeft: '560px', paddingTop: '300px'}}>
       <Grid container spacing={2}>
         <Grid item xs={4}>
-          <p>{calc}</p>
+          <p>{Math.round(calc)}</p>
         </Grid>
       </Grid>
       <Grid container spacing={2}>
@@ -150,8 +150,9 @@ function Radial(props) {
   const [sign, setSign] = useState('')
   const [element, setElement] = useState('')
   const [green, setGreen] = useState('')
+  const [greenFee, setGreenFee] = useState(0)
   const [prevValue, setPrevValue] = useState(0)
-  const [ring, setRing] = useState(0)
+  const [ring, setRing] = useState(2)
 
     useEffect(() => {
       setTimeout(() => {
@@ -179,14 +180,12 @@ function Radial(props) {
     };
   return (
     <div className="App">
-    <Container style={{paddingLeft: '460px', paddingTop: '200px'}}>
+    <Container style={{paddingLeft: '460px', paddingTop: '300px'}}>
       <Box sx={{ flexGrow: 1 }} >
 
       <Grid container spacing={2}>
-        <Grid item xs={1} style={{paddingTop: '40px'}}>
-        </Grid>
-        <Grid item xs={2}>
-          
+        <Grid item xs={3}>
+            {`Ξ${calc / 100 + greenFee}`}
         </Grid>
         <Grid item xs={1} style={{paddingTop: '40px'}}>
           <p>💰</p>
@@ -198,7 +197,7 @@ function Radial(props) {
           <p>{element}</p>
         </Grid>
         <Grid item xs={1} style={{paddingTop: '16px'}}>
-          <p>{calc}</p>
+          <p>{Math.round(calc)}</p>
         </Grid>
         <Grid item xs={1} style={{paddingTop: '16px'}}>
           <p>{green}</p>
@@ -225,7 +224,10 @@ function Radial(props) {
           }>☉</p>
         </Grid>
         <Grid item xs={1}>
-          <p onClick={() => setGreen('⚘')}>⚘</p>
+          <p onClick={() => {
+            setGreen('⚘')
+            setGreenFee(0.0039)
+          }}>⚘</p>
         </Grid>
         <Grid item xs={1}>
           <p onClick={() => setElement('🜂')}>🜂</p>
@@ -236,16 +238,13 @@ function Radial(props) {
         <Grid item xs={3}>
           <CircularSlider
             width={140}
-            label={''}
+            label={`${ring}`}
             valueFontSize={0}
             onChange={ (value) => { 
-              if(prevValue + value == 360){
+              if((Math.abs(prevValue - value) >= (360 - 1)) && (Math.abs(prevValue - value) <= (360 + 1))){ // TODO: ~(val, thresh)
                 setRing(ring => ring + 1)
               }
-              if(value < ring) {
-                1/(5*ring^2-3*ring)/2
-              }
-              setCalc(value * 1/(5*ring^2-3*ring)/2);
+              setCalc(Number(((((5*(ring**2)-3*ring)/2)*value/360 + (5*((ring-1)**2)-3*(ring-1)) )).toPrecision(4)));
               setPrevValue(value) 
             } }
           >
