@@ -7,8 +7,162 @@ import Slider from '@mui/material/Slider';
 import Container from '@mui/material/Container';
 import {CSSTransition} from 'react-transition-group';
 
+import * as VFX from "react-vfx";
+import styled from "styled-components";
+import * as THREE from 'three';
+
 import CircularSlider from '@fseehawer/react-circular-slider';
 import {prefixes, suffixes, library} from './l/index.js'
+
+import { Fluence } from '@fluencelabs/fluence';
+import { krasnodar } from '@fluencelabs/fluence-network-environment';
+import { sayHello, registerHelloPeer } from './generated/getting-started.js';
+// import { sayHello, registerHelloPeer } from './generated/getting-started.js';
+
+const relayNodes = [krasnodar[1], krasnodar[2], krasnodar[3]];
+
+function Aqua() {
+    const [isConnected, setIsConnected] = useState(false);
+    const [helloMessage, setHelloMessage] = useState(null);
+
+    const [peerIdInput, setPeerIdInput] = useState('');
+    const [relayPeerIdInput, setRelayPeerIdInput] = useState('');
+
+    const connect = async (relayPeerId) => {
+        try {
+            await Fluence.start({ connectTo: relayPeerId });
+            setIsConnected(true);
+            // Register handler for this call in aqua:
+            // HelloPeer.hello(%init_peer_id%)
+            registerHelloPeer({
+                hello: (from) => {
+                    setHelloMessage('Hello from: \n' + from);
+                    return 'Hello back to you, \n' + from;
+                },
+            });
+        } catch (err) {
+            console.log('Peer initialization failed', err);
+        }
+    };
+
+    const helloBtnOnClick = async () => {
+        if (!Fluence.getStatus().isConnected) {
+            return;
+        }
+
+        // Using aqua is as easy as calling a javascript funсtion
+        const res = await sayHello(peerIdInput, relayPeerIdInput);
+        setHelloMessage(res);
+    };
+
+    return (
+        <div className="App">
+            <header>
+                <img src={logo} className="logo" alt="logo" />
+            </header>
+
+            <div className="content">
+                {isConnected ? (
+                    <>
+                        <h1>Connected</h1>
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td className="bold">Peer id:</td>
+                                    <td className="mono">
+                                        <span id="peerId">{Fluence.getStatus().peerId}</span>
+                                    </td>
+                                    <td>
+                                        <button
+                                            className="btn-clipboard"
+                                            onClick={() => copyToClipboard(Fluence.getStatus().peerId)}
+                                        >
+                                            <i className="gg-clipboard"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className="bold">Relay peer id:</td>
+                                    <td className="mono">
+                                        <span id="relayId">{Fluence.getStatus().relayPeerId}</span>
+                                    </td>
+                                    <td>
+                                        <button
+                                            className="btn-clipboard"
+                                            onClick={() => copyToClipboard(Fluence.getStatus().relayPeerId)}
+                                        >
+                                            <i className="gg-clipboard"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div>
+                            <h2>Say hello!</h2>
+                            <p className="p">
+                                Now try opening a new tab with the same application. Copy paste the peer id and relay
+                                from the second tab and say hello!
+                            </p>
+                            <div className="row">
+                                <label className="label bold">Target peer id</label>
+                                <input
+                                    id="targetPeerId"
+                                    className="input"
+                                    type="text"
+                                    onChange={(e) => setPeerIdInput(e.target.value)}
+                                    value={peerIdInput}
+                                />
+                            </div>
+                            <div className="row">
+                                <label className="label bold">Target relay</label>
+                                <input
+                                    id="targetRelayId"
+                                    className="input"
+                                    type="text"
+                                    onChange={(e) => setRelayPeerIdInput(e.target.value)}
+                                    value={relayPeerIdInput}
+                                />
+                            </div>
+                            <div className="row">
+                                <button className="btn btn-hello" onClick={helloBtnOnClick}>
+                                    say hello
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <h1>Intro 1: P2P browser-to-browser</h1>
+                        <h2>Pick a relay</h2>
+                        <ul>
+                            {relayNodes.map((x) => (
+                                <li key={x.peerId}>
+                                    <span className="mono">{x.peerId}</span>
+                                    <button className="btn" onClick={() => connect(x.multiaddr)}>
+                                        Connect
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </>
+                )}
+
+                {helloMessage && (
+                    <>
+                        <h2>Message</h2>
+                        <div id="message"> {helloMessage} </div>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+}
+
+const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+};
+
 function valuetext(value) {
   return `${value}°`;
 }
@@ -180,9 +334,24 @@ function Radial(props) {
     };
   return (
     <div className="App">
-    <Container style={{paddingLeft: '460px', paddingTop: '300px'}}>
+    <Container style={{paddingLeft: '460px', paddingTop: '100px'}}>
       <Box sx={{ flexGrow: 1 }} >
 
+      <Grid container spacing={2}>
+        <Grid item xs={4}>
+            ⏚
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={2}>
+        <Grid item xs={4}>
+        </Grid>
+        <Grid item xs={12}>
+            <Metal/>
+        </Grid>
+      </Grid>
+      <br/>
+      <br/>
       <Grid container spacing={2}>
         <Grid item xs={3}>
             {`Ξ${calc / 100 + greenFee}`}
@@ -495,6 +664,427 @@ function Umbrella() {
   )
 }
 
+var fun = 0.0
+setInterval(() => {
+  fun++
+  console.log('here')
+}, 1000)
+
+const metal = `
+uniform vec2 resolution;
+uniform float time;
+void main()
+{
+    vec2 coord = gl_FragCoord.xy / resolution.xy;
+    vec2 st = coord;
+    vec3 line = vec3(0.0);
+
+    coord *= 3.0;
+
+    float len;
+
+    for (int i = 0; i < 15; i++) {
+        len = length(vec2(coord.x, coord.y));
+        coord.x += cos(coord.y + sin(len)) + cos(time * .07) * 0.2;
+        coord.y += sin(coord.x + cos(len)) + sin(time * 0.1);
+    }
+
+    len *= cos(len * 0.4);
+
+    len -= 100.;
+
+    for (float i = 0.0; i < 1.0; i++) {
+        len += 0.11 / abs(mod(st.x, 1.09 * i) * 200.) * 1.;
+    }
+
+    vec3 color = vec3(cos(len + 0.2) * 1.15, cos(len + 0.1), cos(len - 0.05));
+
+    gl_FragColor = vec4(color, 1.0);
+}
+`;
+
+
+const Content = styled.div`
+  width: 60px;
+  height: 600px;
+`;
+
+function Metal(){
+  return(
+    <>
+      <div style={{width: "219px"}}>
+      <VFX.VFXProvider>
+        <VFX.VFXSpan shader={metal}>
+          <Content></Content>
+        </VFX.VFXSpan>
+      </VFX.VFXProvider>
+      </div>
+    </>
+  )
+}
+
+
+class Scene {
+    constructor(options) {
+        this.$el = options.el;
+        this.time = 0;
+
+        this.bindAll();
+        this.init();
+    }
+    
+    bindAll() {
+        this.render = this.render.bind(this);
+        this.resize = this.resize.bind(this);
+    }
+    
+    init() {
+        this.textureLoader = new THREE.TextureLoader();
+        this.camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 2000 );
+        this.camera.position.z = 350;
+        this.camera.position.y = 200;
+        this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+        this.scene = new THREE.Scene();
+
+        this.renderer = new THREE.WebGLRenderer({ alpha: true });
+        this.renderer.setPixelRatio( window.devicePixelRatio );
+        this.renderer.setSize( window.innerWidth, window.innerHeight );
+        this.$el.appendChild( this.renderer.domElement );
+        
+
+        this.createParticles();
+        this.bindEvents();
+        this.resize();
+        this.render();
+    }
+    
+    createParticles() {        
+        const plane = new THREE.PlaneBufferGeometry(500, 250, 250, 125);
+        
+        const textureLoader = new THREE.TextureLoader();
+        textureLoader.crossOrigin = '';
+        
+        const material = new THREE.ShaderMaterial( {
+            uniforms: {
+                time: { value: 1.0 },
+                texture:   { value: textureLoader.load( "https://s3-us-west-2.amazonaws.com/s.cdpn.io/1081752/spark1.png" ) },
+                resolution: { value: new THREE.Vector2() }
+
+            },
+
+            vertexShader: document.getElementById( 'vertex-shader' ).textContent,
+            fragmentShader: document.getElementById( 'fragment-shader' ).textContent,
+            blending: THREE.AdditiveBlending,
+            depthTest: false,
+            transparent: true
+
+        } );
+        
+        console.log(material.uniforms.texture);
+    console.log(document.getElementById('vertex-shader').textContent)
+    console.log(document.getElementById('fragment-shader').textContent)
+        
+        //const material = new THREE.PointsMaterial( { size: 1 } );
+        this.particles = new THREE.Points( plane, material );
+        this.particles.rotation.x = this.degToRad(-180);
+
+        this.scene.add(this.particles);
+    }
+
+    
+    bindEvents() {
+        // window.addEventListener('mousemove', this.mousemove);
+        window.addEventListener('resize', this.resize);
+    }
+
+    
+    resize() {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        this.renderer.setSize(w,h);
+        this.camera.aspect = w/h;
+        this.camera.updateProjectionMatrix();
+    }
+    
+    moveParticles() {
+        this.particles.material.uniforms.time.value = this.time;
+        // this.particles.material.needsUpdate = true;
+    }
+
+    // Animations
+    
+    render() {
+        requestAnimationFrame(this.render);
+        this.time += .01;
+     
+        this.moveParticles();
+        this.renderer.render(this.scene, this.camera);
+    }
+    
+    // Utils
+    degToRad(angle) {
+        return angle * Math.PI / 180;
+    }
+    
+}
+
+
+const board = `
+varying vec3 vUv;
+    varying float vTime;
+    varying float vZ;
+    uniform sampler2D texture_;
+
+    float map(float value, float oldMin, float oldMax, float newMin, float newMax) {
+        return newMin + (newMax - newMin) * (value - oldMin) / (oldMax - oldMin);
+    }
+
+
+    void main()
+    {
+        vec3 colorA = vec3(1.6, 0.1, 66.17);
+        vec3 colorB = vec3(0.17, 0.8, .7); 
+        vec3 color = mix(colorA, colorB, vUv.x * vUv.y);
+        float alpha = map(vZ / 2., -1. / 2., 30. / 2., 0.17, 1.); 
+        //vec3 color = vec3(.5, .5, .6);
+
+        gl_FragColor = vec4( color, alpha);
+        gl_FragColor = gl_FragColor * texture( texture_, gl_PointCoord );
+    }
+`
+
+const watermelon = `
+vec4 mod289(vec4 x)
+    {
+      return x - floor(x * (1.0 / 289.0)) * 289.0;
+    }
+
+    vec4 permute(vec4 x)
+    {
+      return mod289(((x*34.0)+1.0)*x);
+    }
+
+    vec4 taylorInvSqrt(vec4 r)
+    {
+      return 1.79284291400159 - 0.85373472095314 * r;
+    }
+
+    vec2 fade(vec2 t) {
+      return t*t*t*(t*(t*6.0-15.0)+10.0);
+    }
+
+    // Classic Perlin noise
+    float cnoise(vec2 P)
+    {
+      vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
+      vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
+      Pi = mod289(Pi); // To avoid truncation effects in permutation
+      vec4 ix = Pi.xzxz;
+      vec4 iy = Pi.yyww;
+      vec4 fx = Pf.xzxz;
+      vec4 fy = Pf.yyww;
+
+      vec4 i = permute(permute(ix) + iy);
+
+      vec4 gx = fract(i * (1.0 / 41.0)) * 2.0 - 1.0 ;
+      vec4 gy = abs(gx) - 0.5 ;
+      vec4 tx = floor(gx + 0.5);
+      gx = gx - tx;
+
+      vec2 g00 = vec2(gx.x,gy.x);
+      vec2 g10 = vec2(gx.y,gy.y);
+      vec2 g01 = vec2(gx.z,gy.z);
+      vec2 g11 = vec2(gx.w,gy.w);
+
+      vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));
+      g00 *= norm.x;
+      g01 *= norm.y;
+      g10 *= norm.z;
+      g11 *= norm.w;
+
+      float n00 = dot(g00, vec2(fx.x, fy.x));
+      float n10 = dot(g10, vec2(fx.y, fy.y));
+      float n01 = dot(g01, vec2(fx.z, fy.z));
+      float n11 = dot(g11, vec2(fx.w, fy.w));
+
+      vec2 fade_xy = fade(Pf.xy);
+      vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
+      float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
+      return 2.3 * n_xy;
+    }
+
+    float map(float value, float oldMin, float oldMax, float newMin, float newMax) {
+        return newMin + (newMax - newMin) * (value - oldMin) / (oldMax - oldMin);
+    }
+
+    varying vec3 vUv;
+    varying float vTime;
+    varying float vZ;
+    uniform float time;
+    void main()
+    {
+        vUv = position;
+        vTime = time;
+        vec3 newPos = position;
+        vec2 peak = vec2(1.0 - abs(.5 - uv.x), 1.0 - abs(.5 - uv.y));
+        vec2 noise = vec2(
+            map(cnoise(vec2(0.3 * time + uv.x * 5., uv.y * 5.)), 0., 1., -2., (peak.x * peak.y * 30.)),
+            map(cnoise(vec2(-0.3 * time + uv.x * 5., uv.y * 5.)), 0., 1., -2., 25.)
+        );
+
+        newPos.x += noise.x * 3.;
+        newPos.z += noise.x * .06 * noise.y;
+        vZ = newPos.z;
+        vec4 mvPosition = modelViewMatrix * vec4( newPos, 3.0 );
+        gl_PointSize = 5.0;
+        gl_Position = projectionMatrix * mvPosition;
+    }
+
+`
+
+function WaterMelon(){
+
+  useEffect(()=>{
+    const scene = new Scene({
+        el: document.querySelector('.container')
+    });
+  })
+  return(
+    <>
+      <div className="container"></div>
+
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+    {`//
+    // GLSL textureless classic 2D noise "cnoise",
+    // with an RSL-style periodic variant "pnoise".
+    // Author:  Stefan Gustavson (stefan.gustavson@liu.se)
+    // Version: 2011-08-22
+    //
+    // Many thanks to Ian McEwan of Ashima Arts for the
+    // ideas for permutation and gradient selection.
+    //
+    // Copyright (c) 2011 Stefan Gustavson. All rights reserved.
+    // Distributed under the MIT license. See LICENSE file.
+    // https://github.com/ashima/webgl-noise
+    //
+
+    vec4 mod289(vec4 x)
+    {
+      return x - floor(x * (1.0 / 289.0)) * 289.0;
+    }
+
+    vec4 permute(vec4 x)
+    {
+      return mod289(((x*34.0)+1.0)*x);
+    }
+
+    vec4 taylorInvSqrt(vec4 r)
+    {
+      return 1.79284291400159 - 0.85373472095314 * r;
+    }
+
+    vec2 fade(vec2 t) {
+      return t*t*t*(t*(t*6.0-15.0)+10.0);
+    }
+
+    // Classic Perlin noise
+    float cnoise(vec2 P)
+    {
+      vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
+      vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
+      Pi = mod289(Pi); // To avoid truncation effects in permutation
+      vec4 ix = Pi.xzxz;
+      vec4 iy = Pi.yyww;
+      vec4 fx = Pf.xzxz;
+      vec4 fy = Pf.yyww;
+
+      vec4 i = permute(permute(ix) + iy);
+
+      vec4 gx = fract(i * (1.0 / 41.0)) * 2.0 - 1.0 ;
+      vec4 gy = abs(gx) - 0.5 ;
+      vec4 tx = floor(gx + 0.5);
+      gx = gx - tx;
+
+      vec2 g00 = vec2(gx.x,gy.x);
+      vec2 g10 = vec2(gx.y,gy.y);
+      vec2 g01 = vec2(gx.z,gy.z);
+      vec2 g11 = vec2(gx.w,gy.w);
+
+      vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));
+      g00 *= norm.x;
+      g01 *= norm.y;
+      g10 *= norm.z;
+      g11 *= norm.w;
+
+      float n00 = dot(g00, vec2(fx.x, fy.x));
+      float n10 = dot(g10, vec2(fx.y, fy.y));
+      float n01 = dot(g01, vec2(fx.z, fy.z));
+      float n11 = dot(g11, vec2(fx.w, fy.w));
+
+      vec2 fade_xy = fade(Pf.xy);
+      vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
+      float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
+      return 2.3 * n_xy;
+    }
+
+    float map(float value, float oldMin, float oldMax, float newMin, float newMax) {
+        return newMin + (newMax - newMin) * (value - oldMin) / (oldMax - oldMin);
+    }
+
+    varying vec3 vUv;
+    varying float vTime;
+    varying float vZ;
+    uniform float time;
+    void main()
+    {
+        vUv = position;
+        vTime = time;
+        vec3 newPos = position;
+        vec2 peak = vec2(1.0 - abs(.5 - uv.x), 1.0 - abs(.5 - uv.y));
+        vec2 noise = vec2(
+            map(cnoise(vec2(0.3 * time + uv.x * 5., uv.y * 5.)), 0., 1., -2., (peak.x * peak.y * 30.)),
+            map(cnoise(vec2(-0.3 * time + uv.x * 5., uv.y * 5.)), 0., 1., -2., 25.)
+        );
+
+        newPos.x += noise.x * 3.;
+        newPos.z += noise.x * .06 * noise.y;
+        vZ = newPos.z;
+        vec4 mvPosition = modelViewMatrix * vec4( newPos, 3.0 );
+        gl_PointSize = 5.0;
+        gl_Position = projectionMatrix * mvPosition;
+    }`}
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+    {`varying vec3 vUv;
+    varying float vTime;
+    varying float vZ;
+    uniform sampler2D texture_;
+
+    float map(float value, float oldMin, float oldMax, float newMin, float newMax) {
+        return newMin + (newMax - newMin) * (value - oldMin) / (oldMax - oldMin);
+    }
+
+
+    void main()
+    {
+        vec3 colorA = vec3(1.6, 0.1, 66.17);
+        vec3 colorB = vec3(0.17, 0.8, .7); 
+        vec3 color = mix(colorA, colorB, vUv.x * vUv.y);
+        float alpha = map(vZ / 2., -1. / 2., 30. / 2., 0.17, 1.); 
+        //vec3 color = vec3(.5, .5, .6);
+
+        gl_FragColor = vec4( color, alpha);
+        gl_FragColor = gl_FragColor * texture( texture_, gl_PointCoord );
+    }`}
+    </script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js'></script><script  src="./script.js"></script>
+    </>
+  )
+}
+
 function App(props) {
   const [type, setType] = useState('~')
   return (
@@ -504,7 +1094,7 @@ function App(props) {
         ? 
           <Radial type={type} setType={setType}/>
         :
-          <Linear type={type} setType={setType}/>
+          <Aqua type={type} setType={setType}/>
       }
     </>
   )

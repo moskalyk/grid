@@ -5,6 +5,8 @@
   "dependencies": {
     "@emotion/react": "^11.9.3",
     "@emotion/styled": "^11.9.3",
+    "@fluencelabs/fluence": "^0.23.1",
+    "@fluencelabs/fluence-network-environment": "^1.0.13",
     "@fseehawer/react-circular-slider": "^2.5.9",
     "@mui/material": "^5.8.7",
     "@testing-library/jest-dom": "^5.14.1",
@@ -15,6 +17,9 @@
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
     "react-transition-group": "^4.4.2",
+    "react-vfx": "^0.5.0",
+    "styled-components": "^5.3.5",
+    "three": "^0.142.0",
     "web-vitals": "^2.1.0"
   },
   "scripts": {
