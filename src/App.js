@@ -21,6 +21,18 @@ import { sayHello, registerHelloPeer } from './generated/getting-started.js';
 
 const relayNodes = [krasnodar[1], krasnodar[2], krasnodar[3]];
 
+function Dex(){
+
+  // static address
+  // create first transaction
+  // crete second transaction
+  // send transacation
+  return(
+    <>
+      {/*<button>send<button/>*/}
+    </>
+  )
+}
 function Aqua() {
     const [isConnected, setIsConnected] = useState(false);
     const [helloMessage, setHelloMessage] = useState(null);
