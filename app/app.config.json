@@ -1,0 +1,17 @@
+{
+  "services": {
+    "HelloPeer": {
+      "dependencies": [],
+      "node": "12D3KooWFEwNWcHqi9rtsmDhsYcDbRUCDXH84RC4FW6UfsFWaoHi"
+    },
+    "modules": [
+      {
+        "name": "HelloPeer",      
+        "path": "",
+        "logger_enabled": true
+      }
+    ]
+  },
+  "scripts": {},
+  "script_storage": {}
+}

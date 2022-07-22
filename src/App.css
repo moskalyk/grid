@@ -1,6 +1,39 @@
 .App {
   text-align: center;
 }
+
+#container {
+  margin-top: 170px;
+}
+
+h1 {
+  font-size: 32px;
+  color: #0a11a5;
+  margin: auto;
+  text-align: center;
+  border: 0px solid red;
+}
+
+#numbers {
+  border: 0px solid red;
+  margin-top: 200px;
+  width: 30px;
+  margin: 200px auto;
+}
+
+.box {
+  position: absolute;
+  border: 0px solid #000;
+  display: inline-block;
+  width: 30px;
+  top: 30px;
+  font-size: 30px;
+  font-weight: bold;
+  text-align: center;
+  transform-origin: bottom;
+}
+
+
 canvas {
     display: block;
 }
@@ -72,9 +105,10 @@ li {
 .btn {
   height: 26px;
   border: 1px solid;
-  border-color: $color2;
+  border-color: black;
+  color: white;
 
-  background-color: transparent;
+  background-color: black;
 
   margin: 5px;
 

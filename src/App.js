@@ -14,6 +14,9 @@ import * as THREE from 'three';
 import CircularSlider from '@fseehawer/react-circular-slider';
 import {prefixes, suffixes, library} from './l/index.js'
 
+import { providers } from "ethers";
+import { init } from "@textile/eth-storage";
+
 import { Fluence } from '@fluencelabs/fluence';
 import { krasnodar } from '@fluencelabs/fluence-network-environment';
 import { sayHello, registerHelloPeer } from './generated/getting-started.js';
@@ -21,35 +24,30 @@ import { sayHello, registerHelloPeer } from './generated/getting-started.js';
 
 const relayNodes = [krasnodar[1], krasnodar[2], krasnodar[3]];
 
-function Dex(){
+const WIDTH = 300
+const HEIGHT = 200
 
-  // static address
-  // create first transaction
-  // crete second transaction
-  // send transacation
-  return(
-    <>
-      {/*<button>send<button/>*/}
-    </>
-  )
-}
-function Aqua() {
-    const [isConnected, setIsConnected] = useState(false);
+
+function Aqua(props) {
     const [helloMessage, setHelloMessage] = useState(null);
-
-    const [peerIdInput, setPeerIdInput] = useState('');
-    const [relayPeerIdInput, setRelayPeerIdInput] = useState('');
 
     const connect = async (relayPeerId) => {
         try {
             await Fluence.start({ connectTo: relayPeerId });
-            setIsConnected(true);
+            props.setIsConnected(true);
+            props.setType('☉');
+            console.log(Fluence.getStatus().peerId)
+            const fan = setPatP(Fluence.getStatus().peerId)
+            console.log(setPhoneme(`~${suffixes[fan[0]]}${suffixes[fan[1]]}-${suffixes[fan[2]]}${suffixes[fan[3]]}`))
+
             // Register handler for this call in aqua:
             // HelloPeer.hello(%init_peer_id%)
             registerHelloPeer({
                 hello: (from) => {
                     setHelloMessage('Hello from: \n' + from);
-                    return 'Hello back to you, \n' + from;
+                    console.log(`dialing message`)
+                    const fan = setPatP(Fluence.getStatus().peerId)
+                    return 'Hello back to you, from \n' + setPhoneme(`~${suffixes[fan[0]]}${suffixes[fan[1]]}-${suffixes[fan[2]]}${suffixes[fan[3]]}`);
                 },
             });
         } catch (err) {
@@ -63,95 +61,25 @@ function Aqua() {
         }
 
         // Using aqua is as easy as calling a javascript funсtion
-        const res = await sayHello(peerIdInput, relayPeerIdInput);
+        const res = await sayHello(props.peerIdInput, props.relayPeerIdInput);
         setHelloMessage(res);
     };
 
     return (
         <div className="App">
-            <header>
-                <img src={logo} className="logo" alt="logo" />
-            </header>
-
             <div className="content">
-                {isConnected ? (
-                    <>
-                        <h1>Connected</h1>
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td className="bold">Peer id:</td>
-                                    <td className="mono">
-                                        <span id="peerId">{Fluence.getStatus().peerId}</span>
-                                    </td>
-                                    <td>
-                                        <button
-                                            className="btn-clipboard"
-                                            onClick={() => copyToClipboard(Fluence.getStatus().peerId)}
-                                        >
-                                            <i className="gg-clipboard"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className="bold">Relay peer id:</td>
-                                    <td className="mono">
-                                        <span id="relayId">{Fluence.getStatus().relayPeerId}</span>
-                                    </td>
-                                    <td>
-                                        <button
-                                            className="btn-clipboard"
-                                            onClick={() => copyToClipboard(Fluence.getStatus().relayPeerId)}
-                                        >
-                                            <i className="gg-clipboard"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <div>
-                            <h2>Say hello!</h2>
-                            <p className="p">
-                                Now try opening a new tab with the same application. Copy paste the peer id and relay
-                                from the second tab and say hello!
-                            </p>
-                            <div className="row">
-                                <label className="label bold">Target peer id</label>
-                                <input
-                                    id="targetPeerId"
-                                    className="input"
-                                    type="text"
-                                    onChange={(e) => setPeerIdInput(e.target.value)}
-                                    value={peerIdInput}
-                                />
-                            </div>
-                            <div className="row">
-                                <label className="label bold">Target relay</label>
-                                <input
-                                    id="targetRelayId"
-                                    className="input"
-                                    type="text"
-                                    onChange={(e) => setRelayPeerIdInput(e.target.value)}
-                                    value={relayPeerIdInput}
-                                />
-                            </div>
-                            <div className="row">
-                                <button className="btn btn-hello" onClick={helloBtnOnClick}>
-                                    say hello
-                                </button>
-                            </div>
-                        </div>
-                    </>
+                {props.isConnected ? (
+                  <>
+                  </>
                 ) : (
                     <>
-                        <h1>Intro 1: P2P browser-to-browser</h1>
-                        <h2>Pick a relay</h2>
                         <ul>
                             {relayNodes.map((x) => (
                                 <li key={x.peerId}>
-                                    <span className="mono">{x.peerId}</span>
-                                    <button className="btn" onClick={() => connect(x.multiaddr)}>
+                                    <button className="btn" onClick={() => {
+                                      connect(x.multiaddr)
+                                      props.setRelayPeerIdInput(x.peerId)
+                                    }}>
                                         Connect
                                     </button>
                                 </li>
@@ -315,6 +243,7 @@ function Radial(props) {
   const [calc, setCalc] = useState(0)
   const [sign, setSign] = useState('')
   const [element, setElement] = useState('')
+  const [healing, setHealing] = useState('⚘')
   const [green, setGreen] = useState('')
   const [greenFee, setGreenFee] = useState(0)
   const [prevValue, setPrevValue] = useState(0)
@@ -329,9 +258,17 @@ function Radial(props) {
       
     })
 
-    const conjuct = () => {
+    const conjuct = async () => {
       document.querySelector('#prompt').classList.add('airplane')
       setSign('𓅣')
+      console.log(props.peerIdInput)
+      console.log(props.relayPeerIdInput)
+      console.log(Fluence.getStatus().peerId)
+      const fan = setPatP(Fluence.getStatus().peerId)
+      console.log(`~${suffixes[fan[0]]}${suffixes[fan[1]]}-${suffixes[fan[2]]}${suffixes[fan[3]]}`)
+      console.log(setPhoneme(`~${suffixes[fan[0]]}${suffixes[fan[1]]}-${suffixes[fan[2]]}${suffixes[fan[3]]}`))
+      const res = await sayHello(props.peerIdInput, props.relayPeerIdInput, setPhoneme(`~${suffixes[fan[0]]}${suffixes[fan[1]]}-${suffixes[fan[2]]}${suffixes[fan[3]]}`));
+      console.log(res)
     }
 
     const handleChange = (event, newValue) => {
@@ -352,6 +289,10 @@ function Radial(props) {
       <Grid container spacing={2}>
         <Grid item xs={4}>
             ⏚
+            <input value={props.peerIdInput}onChange={(e) => {
+              console.log(e.target.value)
+              props.setPeerIdInput(e.target.value)
+            }}></input>
         </Grid>
       </Grid>
 
@@ -384,13 +325,25 @@ function Radial(props) {
           <p>{green}</p>
         </Grid>
         <Grid item xs={1} style={{paddingTop: '16px'}}>
-          <p>{sign}</p>
+          <p>{(sign == '♦') ? sign : <img width="16px" height='16px' src="https://cryptologos.cc/logos/polygon-matic-logo.png"></img>}</p>
         </Grid>
       </Grid>
 
       <Grid container spacing={2}>
         <Grid item xs={1}>
-          <p onClick={() => setSign('♦')}>♦</p>
+          <p 
+            onDoubleClick = {
+              () => {
+                sign == '♦'
+                ?
+                  setSign(`[]`)
+                :
+                  setSign('♦')
+              }
+            }
+          onClick={() => setSign('♦')}>{
+            (sign == '♦') ? sign : <img width="16px" height='16px' src="https://cryptologos.cc/logos/polygon-matic-logo.png"></img>
+          }</p>
         </Grid>
         <Grid item xs={1}>
           <p onDoubleClick = {
@@ -401,14 +354,25 @@ function Radial(props) {
                 :
                   props.setType('☉')
               }
-            
           }>☉</p>
         </Grid>
         <Grid item xs={1}>
-          <p onClick={() => {
-            setGreen('⚘')
+          <p 
+
+          onDoubleClick = {
+              () => {
+                healing == '⚘'
+                ?
+                  (healing == '🌊') ? props.setType('🪵') : props.setType('🌊')
+                :
+                  props.setHealing('⚘')
+              }
+          }
+
+          onClick={() => {
+            setGreen(healing)
             setGreenFee(0.0039)
-          }}>⚘</p>
+          }}>{healing}</p>
         </Grid>
         <Grid item xs={1}>
           <p onClick={() => setElement('🜂')}>🜂</p>
@@ -460,13 +424,17 @@ function Radial(props) {
       </Grid>
       <Grid container spacing={2}>
         <Grid item xs={1} style={{paddingTop: '40px'}}>
-          <p>☂</p>
+          <p onClick={() => {
+            props.setType('☂')
+          }}>☂</p>
         </Grid>
         <Grid item xs={2}>
           
         </Grid>
         <Grid item xs={1} style={{paddingTop: '40px'}}>
-          <p>⚛</p>
+          <p onClick={() => {
+            props.setType('ɸ')
+          }}>ɸ</p>
         </Grid>
       </Grid>
     </Box>
@@ -503,70 +471,75 @@ function Particle(props){
         console.log('ho')
       }
     } container spacing={2} id={`hack-${props.id}`} className={props.fire ? "circle" : ''} width={300}>
-      <Grid item xs={1} style={{paddingTop: '16px'}}>
+      <Grid item xs={1} style={{paddingTop: '16px', padding: '11px'}}>
         <p onMouseEnter={() => resetTime()} style={{color: props.color}}>{props.fire ? '🔥' : props.sign }</p>
       </Grid>
-      <Grid item xs={1} style={{paddingTop: '16px'}}>
+      <Grid item xs={1} style={{paddingTop: '16px', padding: '11px'}}>
         <p onMouseEnter={() => resetTime()} style={{color: props.color}}>{props.fire ? '🔥' : props.element}</p>
       </Grid>
-      <Grid item xs={1} style={{paddingTop: '16px'}}>
+      <Grid item xs={1} style={{paddingTop: '16px', padding: '11px'}}>
         <p onMouseEnter={() => resetTime()} style={{color: props.color}}>{props.fire ? '🔥' : props.calc}</p>
       </Grid>
-      <Grid item xs={1} style={{paddingTop: '16px'}}>
+      <Grid item xs={1} style={{paddingTop: '16px', padding: '11px'}}>
         <p onMouseEnter={() => resetTime()} style={{color: props.color}}>{props.fire ? '🔥' : props.green }</p>
       </Grid>
-      <Grid item xs={1} style={{paddingTop: '16px'}}>
+      <Grid item xs={1} style={{paddingTop: '16px', padding: '11px'}}>
         <p style={{color: props.color}}>{props.label}</p>
       </Grid>
     </Grid>
   )
 }
 
-/// how to overlap with fluence cli args
-function History(){
-  const [fire, setFire] = useState(false)
-  const [wind, setWind] = useState(false)
-  const [max, setMax] = useState(0)
-  const [time, setTime] = useState(0)
-  const [multiplier, setMultiplier] = useState(1)
+  const setPatP = (larp) => {
 
-    React.useEffect(() => {
-    if(!wind && fire){
-      timer = window.setInterval(() => {
-        setTime(time => time + 1); // <-- Change this line!
-      }, 1000);
-    }
-    return () => {
-      window.clearInterval(timer);
-    };
-  }, []);
-  const txs = [
-    ['orange','♦','🜂',123,'⚘', '♫'],
-    ['blue','♦','🜃',108,'⚘', '♨'],
-    ['green','♦','🜃',36,'⚘', '⚛'],
-    ['indigo','♦','🜁',9,'⚘', '⚡'],
-  ]
-  // get a list of txs -> particle
-  const particles = txs.map((tx, i) => {
-    return <Particle max={max} setMax={setMax} fire={fire} multiplier={multiplier} setMultiplier={setMultiplier} time={time} setTime={setTime} id={i} color={tx[0]}sign={tx[1]} element={tx[2]} calc={tx[3]} green={tx[4]} label={tx[5]}/>
-  })
+    let fan = []
+    let rad = (larp[0] == '~') ? 1 : 0
 
-  const resetTime = () => {
-      console.log(max)
-      console.log(time)
-    if(max < time){
-      console.log('set max')
-      setMax(time)
+    const alt = [
+      larp.slice(rad + 0, rad + 13),
+      larp.slice(rad + 13, rad + 26),
+      larp.slice(rad + 26, rad + 39),
+      larp.slice(rad + 39, rad + 52),
+      ]
+
+    // parse larp
+    let total = 0
+    for(let i = 0; i < alt.length; i++){
+      total = 0
+      for(let j = 0; j < alt[i].length; j++){
+        total += alt[i].charCodeAt(j)
+      }
+      fan.push(total % 256 )
     }
 
-    clearInterval(timer)
+    // loop and push name
+    return fan
+  }
 
-    setTime(0)
+  const setFan = (larp) => {
 
-    timer = window.setInterval(() => {
-      setTime(time => time + 1); // <-- Change this line!
-    }, 1000);
+    let fan = []
+    let rad = (larp[0] == '~') ? 1 : 0
 
+    const alt = [
+      larp.slice(rad + 0, rad + 3),
+      larp.slice(rad + 3, rad + 6),
+      larp.slice(rad + 7, rad + 10),
+      larp.slice(rad + 10, rad + 13),
+      ]
+
+    // parse larp
+
+    for(let i = 0; i < suffixes.length; i++){
+      for(let j = 0; j < alt.length; j++){
+        if(suffixes[i] == alt[j] || prefixes[i] == alt[j]) {
+          fan.push(library[i]) //0 = fool, 188 = etamin star, 212 = opposition, 231 = creature
+        }
+      }
+    }
+
+    // loop and push name
+    return fan
   }
 
   const setPhoneme = (larp) => {
@@ -595,6 +568,178 @@ function History(){
     return `${fan[0]}·${fan[1]}·${fan[2]}·${fan[3]}`
   }
 
+
+let mouse = {x: WIDTH / 2, y: HEIGHT / 2}
+
+const colors = [
+  '#71E2F6',
+  '#FFA500',
+  '#7AF392',
+  '#DDFA9D',
+  '#87E967'
+]
+// Utility Functions
+function randomIntFromRange(min,max) {
+  return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+function randomColor(colors) {
+  return colors[Math.floor(Math.random() * colors.length)]
+}
+
+function distance(x1, y1, x2, y2) {
+    const xDist = x2 - x1
+    const yDist = y2 - y1
+
+    return Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2))
+}
+
+
+// Objects
+function ParticleV(x, y, r, color) {
+  const canvas = document.querySelector('#portal')
+  const c = canvas.getContext('2d')
+  this.x = x
+  this.y = y
+  this.r = r
+  this.color = color
+  this.rs = Math.random() * Math.PI * 2
+  this.v = .05
+  // this.distanceFromCenter = {
+  //   x: randomIntFromRange(60, 450),    
+  //   y: randomIntFromRange(60, 450)    
+  // }
+  this.distanceFromCenter = randomIntFromRange(20, 100)
+  this.lastMouse = {
+    x: x, 
+    y: y
+  }
+
+  this.update = () => {
+    const lastPoint = {
+      x: this.x,
+      y: this.y
+    }
+    this.rs += this.v
+    
+    this.lastMouse.x += (mouse.x - this.lastMouse.x) * .08
+    this.lastMouse.y += (mouse.y - this.lastMouse.y) * .08
+    
+    this.x = this.lastMouse.x + Math.cos(this.rs) * this.distanceFromCenter
+    this.y = this.lastMouse.y + Math.sin(this.rs) * this.distanceFromCenter
+    this.draw(lastPoint)
+  }
+
+  this.draw = lastPoint => {
+    c.beginPath()
+    // c.arc(this.x, this.y, this.r, 0, Math.PI * 2, false)  
+    // c.fillStyle = this.color
+    // c.fill()
+    c.lineWidth = this.r
+    c.moveTo(lastPoint.x, lastPoint.y)
+    c.lineTo(this.x, this.y)
+    c.strokeStyle = this.color
+    c.stroke()
+    c.closePath()
+  }
+}
+// Implementation
+let particles
+function initParticles() {
+      const canvas = document.querySelector('#portal')
+    const c = canvas.getContext('2d')
+
+    canvas.width = 300
+    canvas.height = 200
+  particles = []
+
+  for (let i = 0; i < 14; i++) {
+    const r = (Math.random() * 2) + 1
+    particles.push(new ParticleV(canvas.width / 2, canvas.height / 2, r, randomColor(colors)));
+  }
+}
+
+// Animation Loop
+function animateParticles() {
+      const canvas = document.querySelector('#portal')
+    const c = canvas.getContext('2d')
+
+  requestAnimationFrame(animateParticles)
+  c.fillStyle = `rgba(255, 255, 255, .05)`
+  c.fillRect(0, 0, canvas.width, canvas.height)
+
+
+  particles.forEach(particle => {
+    particle.update()
+  })
+}
+
+/// how to overlap with fluence cli args
+function History(props){
+  const [fire, setFire] = useState(false)
+  const [wind, setWind] = useState(false)
+  const [max, setMax] = useState(0)
+  const [time, setTime] = useState(0)
+  const [multiplier, setMultiplier] = useState(1)
+
+    React.useEffect(() => {
+
+    if(!wind && fire){
+      timer = window.setInterval(() => {
+        setTime(time => time + 1); // <-- Change this line!
+      }, 1000);
+    }
+
+    // Variables
+let mouse = {
+  x: WIDTH / 2,
+  y: HEIGHT / 2 
+}
+    // Initial Setup
+    const canvas = document.querySelector('#portal')
+    const c = canvas.getContext('2d')
+
+    canvas.width = WIDTH
+    canvas.height = HEIGHT
+
+    initParticles()
+    animateParticles()
+
+
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
+  const txs = [
+    ['orange','♦','🜂',123,'⚘', '♫'],
+    ['blue','♦','🜃',99,'🌊', '♨'],
+    ['green','♦','🜃',36,'⚘', '⚛'],
+    ['indigo','♦','🜁',9,'🪵', '⚡'],
+  ]
+  // get a list of txs -> particle
+  const particles = txs.map((tx, i) => {
+    return <Particle max={max} setMax={setMax} fire={fire} multiplier={multiplier} setMultiplier={setMultiplier} time={time} setTime={setTime} id={i} color={tx[0]}sign={tx[1]} element={tx[2]} calc={tx[3]} green={tx[4]} label={tx[5]}/>
+  })
+
+  const resetTime = () => {
+      console.log(max)
+      console.log(time)
+    if(max < time){
+      console.log('set max')
+      setMax(time)
+    }
+
+    clearInterval(timer)
+
+    setTime(0)
+
+    timer = window.setInterval(() => {
+      setTime(time => time + 1); // <-- Change this line!
+    }, 1000);
+
+  }
+
   const stopTime = () => {
     if(max < time){
       console.log('set max')
@@ -605,7 +750,12 @@ function History(){
   }
 
   return(<>
-    <Container >
+    <Container style={{border: '1px solid', width: '381px', padding: '40px', boxShadow: '15px 17px #8888'}}>
+      <Grid container spacing={6} width={300}>
+        <Grid item xs={2}>
+          <canvas id="portal"></canvas>
+        </Grid>
+      </Grid>
       <Grid container spacing={6} width={300}>
         <Grid item xs={2} >
           <p style={{paddingLeft: '2px'}}>{'♦'}</p>
@@ -625,10 +775,16 @@ function History(){
           <p >{'☉'}</p>
         </Grid>
         <Grid item xs={2} style={{paddingTop: '16px'}}>
-          <p >{11.14}</p>
+          <p >{11.05}</p>
         </Grid>
         <Grid item xs={2} style={{paddingTop: '16px'}}>
           <p onClick={() => setFire(true)} >{'🔥'}</p>
+        </Grid>
+        <Grid item xs={2} style={{paddingTop: '16px'}}>
+          <p onClick={() => {
+            props.setType('⚛')
+            console.log('download')
+          }}>⚛</p>
         </Grid>
       </Grid>
       <br/>
@@ -667,20 +823,6 @@ function History(){
     </Container>
   </>)
 }
-
-function Umbrella() {
-  return(
-    <>
-      
-    </>
-  )
-}
-
-var fun = 0.0
-setInterval(() => {
-  fun++
-  console.log('here')
-}, 1000)
 
 const metal = `
 uniform vec2 resolution;
@@ -841,275 +983,197 @@ class Scene {
     
 }
 
+function Explorer(props) {
 
-const board = `
-varying vec3 vUv;
-    varying float vTime;
-    varying float vZ;
-    uniform sampler2D texture_;
+  const dwnload = async () => {
+    await window.ethereum.enable();
+    const provider = new providers.Web3Provider(window.ethereum);
+    const wallet = provider.getSigner();
 
-    float map(float value, float oldMin, float oldMax, float newMin, float newMax) {
-        return newMin + (newMax - newMin) * (value - oldMin) / (oldMax - oldMin);
-    }
+    const storage = await init(wallet);
 
+    const canvas = document.getElementById('canvas-tx')
+    const img    = canvas.toDataURL('image/png')
 
-    void main()
-    {
-        vec3 colorA = vec3(1.6, 0.1, 66.17);
-        vec3 colorB = vec3(0.17, 0.8, .7); 
-        vec3 color = mix(colorA, colorB, vUv.x * vUv.y);
-        float alpha = map(vZ / 2., -1. / 2., 30. / 2., 0.17, 1.); 
-        //vec3 color = vec3(.5, .5, .6);
-
-        gl_FragColor = vec4( color, alpha);
-        gl_FragColor = gl_FragColor * texture( texture_, gl_PointCoord );
-    }
-`
-
-const watermelon = `
-vec4 mod289(vec4 x)
-    {
-      return x - floor(x * (1.0 / 289.0)) * 289.0;
-    }
-
-    vec4 permute(vec4 x)
-    {
-      return mod289(((x*34.0)+1.0)*x);
-    }
-
-    vec4 taylorInvSqrt(vec4 r)
-    {
-      return 1.79284291400159 - 0.85373472095314 * r;
-    }
-
-    vec2 fade(vec2 t) {
-      return t*t*t*(t*(t*6.0-15.0)+10.0);
-    }
-
-    // Classic Perlin noise
-    float cnoise(vec2 P)
-    {
-      vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
-      vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
-      Pi = mod289(Pi); // To avoid truncation effects in permutation
-      vec4 ix = Pi.xzxz;
-      vec4 iy = Pi.yyww;
-      vec4 fx = Pf.xzxz;
-      vec4 fy = Pf.yyww;
-
-      vec4 i = permute(permute(ix) + iy);
-
-      vec4 gx = fract(i * (1.0 / 41.0)) * 2.0 - 1.0 ;
-      vec4 gy = abs(gx) - 0.5 ;
-      vec4 tx = floor(gx + 0.5);
-      gx = gx - tx;
-
-      vec2 g00 = vec2(gx.x,gy.x);
-      vec2 g10 = vec2(gx.y,gy.y);
-      vec2 g01 = vec2(gx.z,gy.z);
-      vec2 g11 = vec2(gx.w,gy.w);
-
-      vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));
-      g00 *= norm.x;
-      g01 *= norm.y;
-      g10 *= norm.z;
-      g11 *= norm.w;
-
-      float n00 = dot(g00, vec2(fx.x, fy.x));
-      float n10 = dot(g10, vec2(fx.y, fy.y));
-      float n01 = dot(g01, vec2(fx.z, fy.z));
-      float n11 = dot(g11, vec2(fx.w, fy.w));
-
-      vec2 fade_xy = fade(Pf.xy);
-      vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
-      float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
-      return 2.3 * n_xy;
-    }
-
-    float map(float value, float oldMin, float oldMax, float newMin, float newMax) {
-        return newMin + (newMax - newMin) * (value - oldMin) / (oldMax - oldMin);
-    }
-
-    varying vec3 vUv;
-    varying float vTime;
-    varying float vZ;
-    uniform float time;
-    void main()
-    {
-        vUv = position;
-        vTime = time;
-        vec3 newPos = position;
-        vec2 peak = vec2(1.0 - abs(.5 - uv.x), 1.0 - abs(.5 - uv.y));
-        vec2 noise = vec2(
-            map(cnoise(vec2(0.3 * time + uv.x * 5., uv.y * 5.)), 0., 1., -2., (peak.x * peak.y * 30.)),
-            map(cnoise(vec2(-0.3 * time + uv.x * 5., uv.y * 5.)), 0., 1., -2., 25.)
-        );
-
-        newPos.x += noise.x * 3.;
-        newPos.z += noise.x * .06 * noise.y;
-        vZ = newPos.z;
-        vec4 mvPosition = modelViewMatrix * vec4( newPos, 3.0 );
-        gl_PointSize = 5.0;
-        gl_Position = projectionMatrix * mvPosition;
-    }
-
-`
-
-function WaterMelon(){
-
-  useEffect(()=>{
-    const scene = new Scene({
-        el: document.querySelector('.container')
+    const blob = new Blob([img], { type: "text/plain" });
+    const file = new File([blob], "welcome.txt", {
+      type: "text/plain",
+      lastModified: new Date().getTime()
     });
+
+    await storage.addDeposit();
+
+    const { id, cid } = await storage.store(file);
+    console.log(cid)
+    // TODO, set some interface for clicking on button to open, and display in a data:png
+  }
+
+  useEffect(() => {
+    var c = document.getElementById("canvas-tx");
+    var ctx = c.getContext("2d");
+    const fan = setFan('~milbyt-moszod')
+    console.log(fan)
+    const tt = setPatP(Fluence.getStatus().peerId)
+    console.log(tt)
+    for(let i = 0; i < prefixes.length;i++){
+      for(let j = 0; j < suffixes.length; j++){
+        for(let k = 0; k < tt.length; k++){
+          if(i == tt[k]|| j == tt[k]){
+            console.log('HIII')
+            // console.log(i)
+            // console.log(j)
+            // console.log(tt[k])
+            ctx.fillRect(i, j, 1, 1);
+            ctx.fillRect(j, i, 1, 1);
+          }
+        }
+      }
+    }
+    
   })
+
   return(
     <>
-      <div className="container"></div>
+      <Grid container spacing={6} width={500} style={{paddingLeft: '460px', paddingTop: '100px'}}>
+        <Grid item xs={2} style={{paddingTop: '16px'}}>
+          <canvas id="canvas-tx"></canvas>
+        </Grid>
 
-
-<script id="vertex-shader" type="x-shader/x-vertex">
-    {`//
-    // GLSL textureless classic 2D noise "cnoise",
-    // with an RSL-style periodic variant "pnoise".
-    // Author:  Stefan Gustavson (stefan.gustavson@liu.se)
-    // Version: 2011-08-22
-    //
-    // Many thanks to Ian McEwan of Ashima Arts for the
-    // ideas for permutation and gradient selection.
-    //
-    // Copyright (c) 2011 Stefan Gustavson. All rights reserved.
-    // Distributed under the MIT license. See LICENSE file.
-    // https://github.com/ashima/webgl-noise
-    //
-
-    vec4 mod289(vec4 x)
-    {
-      return x - floor(x * (1.0 / 289.0)) * 289.0;
-    }
-
-    vec4 permute(vec4 x)
-    {
-      return mod289(((x*34.0)+1.0)*x);
-    }
-
-    vec4 taylorInvSqrt(vec4 r)
-    {
-      return 1.79284291400159 - 0.85373472095314 * r;
-    }
-
-    vec2 fade(vec2 t) {
-      return t*t*t*(t*(t*6.0-15.0)+10.0);
-    }
-
-    // Classic Perlin noise
-    float cnoise(vec2 P)
-    {
-      vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
-      vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
-      Pi = mod289(Pi); // To avoid truncation effects in permutation
-      vec4 ix = Pi.xzxz;
-      vec4 iy = Pi.yyww;
-      vec4 fx = Pf.xzxz;
-      vec4 fy = Pf.yyww;
-
-      vec4 i = permute(permute(ix) + iy);
-
-      vec4 gx = fract(i * (1.0 / 41.0)) * 2.0 - 1.0 ;
-      vec4 gy = abs(gx) - 0.5 ;
-      vec4 tx = floor(gx + 0.5);
-      gx = gx - tx;
-
-      vec2 g00 = vec2(gx.x,gy.x);
-      vec2 g10 = vec2(gx.y,gy.y);
-      vec2 g01 = vec2(gx.z,gy.z);
-      vec2 g11 = vec2(gx.w,gy.w);
-
-      vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));
-      g00 *= norm.x;
-      g01 *= norm.y;
-      g10 *= norm.z;
-      g11 *= norm.w;
-
-      float n00 = dot(g00, vec2(fx.x, fy.x));
-      float n10 = dot(g10, vec2(fx.y, fy.y));
-      float n01 = dot(g01, vec2(fx.z, fy.z));
-      float n11 = dot(g11, vec2(fx.w, fy.w));
-
-      vec2 fade_xy = fade(Pf.xy);
-      vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
-      float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
-      return 2.3 * n_xy;
-    }
-
-    float map(float value, float oldMin, float oldMax, float newMin, float newMax) {
-        return newMin + (newMax - newMin) * (value - oldMin) / (oldMax - oldMin);
-    }
-
-    varying vec3 vUv;
-    varying float vTime;
-    varying float vZ;
-    uniform float time;
-    void main()
-    {
-        vUv = position;
-        vTime = time;
-        vec3 newPos = position;
-        vec2 peak = vec2(1.0 - abs(.5 - uv.x), 1.0 - abs(.5 - uv.y));
-        vec2 noise = vec2(
-            map(cnoise(vec2(0.3 * time + uv.x * 5., uv.y * 5.)), 0., 1., -2., (peak.x * peak.y * 30.)),
-            map(cnoise(vec2(-0.3 * time + uv.x * 5., uv.y * 5.)), 0., 1., -2., 25.)
-        );
-
-        newPos.x += noise.x * 3.;
-        newPos.z += noise.x * .06 * noise.y;
-        vZ = newPos.z;
-        vec4 mvPosition = modelViewMatrix * vec4( newPos, 3.0 );
-        gl_PointSize = 5.0;
-        gl_Position = projectionMatrix * mvPosition;
-    }`}
-    </script>
-
-    <script id="fragment-shader" type="x-shader/x-fragment">
-    {`varying vec3 vUv;
-    varying float vTime;
-    varying float vZ;
-    uniform sampler2D texture_;
-
-    float map(float value, float oldMin, float oldMax, float newMin, float newMax) {
-        return newMin + (newMax - newMin) * (value - oldMin) / (oldMax - oldMin);
-    }
-
-
-    void main()
-    {
-        vec3 colorA = vec3(1.6, 0.1, 66.17);
-        vec3 colorB = vec3(0.17, 0.8, .7); 
-        vec3 color = mix(colorA, colorB, vUv.x * vUv.y);
-        float alpha = map(vZ / 2., -1. / 2., 30. / 2., 0.17, 1.); 
-        //vec3 color = vec3(.5, .5, .6);
-
-        gl_FragColor = vec4( color, alpha);
-        gl_FragColor = gl_FragColor * texture( texture_, gl_PointCoord );
-    }`}
-    </script>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js'></script><script  src="./script.js"></script>
+        <Grid item xs={2} style={{paddingTop: '16px'}}>
+          <p onClick={() => {
+            props.setType('☉')
+          }}>☉</p>
+        </Grid>
+        <Grid item xs={8} style={{paddingTop: '16px'}}>
+        </Grid>
+        <Grid item xs={2} style={{paddingTop: '16px'}}>
+          <p onClick={() => {
+            // props.setType('☉')
+            dwnload()
+            console.log('download')
+          }}>▼</p>
+        </Grid>
+      </Grid>
     </>
   )
 }
 
-function App(props) {
-  const [type, setType] = useState('~')
-  return (
+
+const PI ="☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☌☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁☂☼☿♃♄♅♆♇☮♣♤♥♦♧♨⚑☘⚘★☁";
+
+// var p = document.getElementById("piCircle");
+
+var i = 0;
+
+function myLoop() {
+  setTimeout(function () {
+    var div = document.createElement("div");
+    div.className = "box";
+    div.innerHTML = PI[i];
+    div.style.transform = "rotate(-" + (i * 360 * 6.5) / PI.length + "deg)";
+    var frac = 0.5;
+    div.style.paddingTop = frac * i + "px";
+    div.style.height = 400 - frac * i + "px";
+    // document.getElementById("numbers").appendChild(div);
+
+    i++;
+    if (i < PI.length) {
+      myLoop();
+    }
+  }, 50);
+}
+
+function Umbrella(props){
+  useEffect(() => {
+    myLoop();
+  })
+
+  return(
     <>
-      {
-        type == "☉" 
-        ? 
-          <Radial type={type} setType={setType}/>
-        :
-          <Aqua type={type} setType={setType}/>
-      }
+      <div id="container">
+        <h1>DEX</h1>
+      </div>
+      <Aqua 
+        type={props.type}
+        setType={props.setType}
+        peerIdInput={props.peerIdInput}
+        isConnected={props.isConnected}
+        setIsConnected={props.setIsConnected}
+        setPeerIdInput={props.setPeerIdInput}
+        relayPeerIdInput={props.relayPeerIdInput}
+        setRelayPeerIdInput={props.setRelayPeerIdInput}
+      />
     </>
   )
 }
 
-export default App;
+function Dex(){
+  const [type, setType] = useState('☂')
+  const [isConnected, setIsConnected] = useState(false);
+  const [peerIdInput, setPeerIdInput] = useState('');
+  const [relayPeerIdInput, setRelayPeerIdInput] = useState('');
+
+  const renderer = () => {
+    switch(type){
+      case '☂':
+        return <Umbrella
+                  type={type}
+                  setType={setType}
+                  peerIdInput={peerIdInput}
+                  isConnected={isConnected}
+                  setIsConnected={setIsConnected}
+                  setPeerIdInput={setPeerIdInput}
+                  relayPeerIdInput={relayPeerIdInput}
+                  setRelayPeerIdInput={setRelayPeerIdInput}
+                />
+      case '☉':
+        return <Radial 
+                  type={type}
+                  setType={setType}
+                  peerIdInput={peerIdInput}
+                  isConnected={isConnected}
+                  setIsConnected={setIsConnected}
+                  setPeerIdInput={setPeerIdInput}
+                  relayPeerIdInput={relayPeerIdInput}
+                  setRelayPeerIdInput={setRelayPeerIdInput}
+                />
+        break;
+      case 'ɸ':
+        return <History 
+                  type={type}
+                  setType={setType}
+                />
+        break
+      case '⚛':
+        return <Explorer
+                  type={type}
+                  setType={setType}
+                />
+        break
+      default:
+        return '404'
+    }
+  }
+  return(
+    <>
+      {renderer()}
+    </>
+  )
+}
+
+// function App(props) {
+//   const [type, setType] = useState('~')
+//   return (
+//     <>
+//       {
+//         type == "☉" 
+//         ? 
+//           <Radial type={type} setType={setType}/>
+//         :
+//           <Aqua type={type} setType={setType}/>
+//       }
+//     </>
+//   )
+// }
+
+export default Dex;
